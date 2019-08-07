@@ -10,9 +10,12 @@ const int Vin = 5;
 const float REFERENCE_RESISTANCE_OHMS = 10000; // Value of the reference resistor on the breadboard.
 const float MAX_RESISTANCE_OHMS = 8000; // Arbitrary, but somewhat calibrated to R1 of 10000
 
+int playing = 0;
+int velocity = 0;
+
 void setup()
 {
-//  Serial.begin(9600);
+  Serial.begin(115200);
 }
 
 void loop()
@@ -22,18 +25,21 @@ void loop()
 //    Serial.print(formatOutput(analogPins[i], resistance));
 //    Serial.print("   ");
 //  }
-//  
-//  Serial.println();
-//  delay(100);
 
+  float resistance = readResistanceFromPin(analogPins[0]);
 
-  Serial.println("test!");
-  noteOn(0, 48, 127);
-  delay(500);
-  noteOff(0, 48, 0);
-  delay(500);
+  if (!playing && resistance < 600) {
+    playing = 1;
+    noteOn(0, 48, 127);
+    Serial.println("note on");
+    Serial.println(resistance);
+    delay(5);
+  } else if (playing && resistance > 700) {
+    playing = 0;
+    noteOff(0, 48, 0);
+    delay(5);
+  }
 }
-
 
 float readResistanceFromPin(int pinNumber)
 {
