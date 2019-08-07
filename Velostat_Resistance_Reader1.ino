@@ -1,0 +1,44 @@
+const int analogPin = 0;
+const int Vin = 5;
+const float REFERENCE_RESISTANCE_OHMS = 1000; // Value of the reference resistor on the breadboard.
+//const float MAX_RESISTANCE_OHMS = 8000; // Arbitrary, but somewhat calibrated to R1 of 10000
+const float MAX_RESISTANCE_OHMS = 800; // Arbitrary, but somewhat calibrated to R1 of 10000
+
+void setup()
+{
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  float resistance = readResistanceFromPin(analogPin);
+
+  Serial.println(formatOutput(analogPin, resistance));
+
+  delay(10);
+}
+
+
+float readResistanceFromPin(int pinNumber)
+{
+  float rawAnalogInput = analogRead(pinNumber);
+
+  if (rawAnalogInput == 0) {
+    return MAX_RESISTANCE_OHMS;
+  }
+
+  float buffer = rawAnalogInput * Vin;
+  float Vout = buffer / 1023.0;
+  
+  buffer = (Vin/Vout) - 1;
+  
+  float outputResistanceOhms = REFERENCE_RESISTANCE_OHMS * buffer;
+  outputResistanceOhms = min(outputResistanceOhms, MAX_RESISTANCE_OHMS); // Clamp output value
+
+  return outputResistanceOhms;
+}
+
+String formatOutput(int analogPin, float resistance)
+{
+  return String(analogPin) + ": " + String(resistance);
+}
