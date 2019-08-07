@@ -12,20 +12,26 @@ const float MAX_RESISTANCE_OHMS = 8000; // Arbitrary, but somewhat calibrated to
 
 void setup()
 {
-  Serial.begin(9600);
+//  Serial.begin(9600);
 }
 
 void loop()
 {
-  for (int i = 0; i < NUM_PINS; i++) {
-    float resistance = readResistanceFromPin(analogPins[i]);
-    Serial.print(formatOutput(analogPins[i], resistance));
-    Serial.print("   ");
-  }
-  
-  Serial.println();
+//  for (int i = 0; i < NUM_PINS; i++) {
+//    float resistance = readResistanceFromPin(analogPins[i]);
+//    Serial.print(formatOutput(analogPins[i], resistance));
+//    Serial.print("   ");
+//  }
+//  
+//  Serial.println();
+//  delay(100);
 
-  delay(100);
+
+  Serial.println("test!");
+  noteOn(0, 48, 127);
+  delay(500);
+  noteOff(0, 48, 0);
+  delay(500);
 }
 
 
@@ -52,4 +58,23 @@ String formatOutput(int analogPin, float resistance)
 {
 //  return String(resistance);
   return String(analogPin) + ": " + String(resistance);
+}
+
+
+// First parameter is the event type (0x09 = note on, 0x08 = note off).
+// Second paraxmeter is note-on/note-off, combined with the channel.
+// Channel can be anything between 0-15. Typically reported to the user as 1-16.
+// Third parameter is the note number (48 = middle C).
+// Fourth parameter is the velocity (64 = normal, 127 = fastest).
+
+void noteOn(byte channel, byte pitch, byte velocity) {
+  midiEventPacket_t noteOn = {0x09, 0x90 | channel, pitch, velocity};
+  MidiUSB.sendMIDI(noteOn);
+  MidiUSB.flush();
+}
+
+void noteOff(byte channel, byte pitch, byte velocity) {
+  midiEventPacket_t noteOff = {0x08, 0x80 | channel, pitch, velocity};
+  MidiUSB.sendMIDI(noteOff);
+  MidiUSB.flush();
 }
