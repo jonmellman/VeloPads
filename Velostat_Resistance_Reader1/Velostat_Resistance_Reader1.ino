@@ -3,7 +3,7 @@
 #include <frequencyToNote.h>
 #include <MIDIUSB_Defs.h>
 #include <MIDIUSB.h>
-#include "VelostatStruct.h"
+#include "VelostatPad.h"
 
 const int NUM_PINS = 2;
 const int Vin = 5;
@@ -11,8 +11,6 @@ const float REFERENCE_RESISTANCE_OHMS = 10000; // Value of the reference resisto
 const float MAX_RESISTANCE_OHMS = 8000; // Arbitrary, but somewhat calibrated to R1 of 10000
 
 struct VelostatPad velostatPads[NUM_PINS];
-int playing = 0;
-int velocity = 0;
 
 void setup() {
     Serial.begin(115200);
@@ -30,19 +28,35 @@ void setup() {
 }
 
 void loop() {
-    float resistance = readResistanceFromPin(0); // TODO: Move to loop
-
-    if (!playing && resistance < 600) {
-        playing = 1;
-        noteOn(0, 48, 127);
-        Serial.println("note on");
-        Serial.println(resistance);
-        delay(5);
-    } else if (playing && resistance > 700) {
-        playing = 0;
-        noteOff(0, 48, 0);
-        delay(5);
+    for (int i = 0; i < NUM_PINS; i++) {
+        updateState(velostatPads[i]);
     }
+
+    delay(5);
+}
+
+void updateState(struct VelostatPad pad) {
+    const int RESISTANCE_THRESHOLD = 600;
+    float resistance = readResistanceFromPin(pad.analogPinNumber);
+    
+    if (!pad.isOn && resistance < RESISTANCE_THRESHOLD) {
+        // Now it's on
+        pad.isOn = true;
+        pad.currentVelocity = getVelocityFromResistance(resistance);
+        noteOn(0, 48, 127);
+    }
+
+    if (pad.isOn && resistance >= RESISTANCE_THRESHOLD) {
+        // Now it's off
+        pad.isOn = false;
+        pad.currentVelocity = 0;
+        noteOff(0, 48, 0);
+    }
+
+}
+
+int getVelocityFromResistance(float resistance) {
+    return 127 - (resistance / MAX_RESISTANCE_OHMS) * 127;
 }
 
 float readResistanceFromPin(int pinNumber) {
