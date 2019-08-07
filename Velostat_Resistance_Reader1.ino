@@ -1,8 +1,7 @@
 const int analogPin = 0;
 const int Vin = 5;
-const float REFERENCE_RESISTANCE_OHMS = 1000; // Value of the reference resistor on the breadboard.
-//const float MAX_RESISTANCE_OHMS = 8000; // Arbitrary, but somewhat calibrated to R1 of 10000
-const float MAX_RESISTANCE_OHMS = 800; // Arbitrary, but somewhat calibrated to R1 of 10000
+const float REFERENCE_RESISTANCE_OHMS = 10000; // Value of the reference resistor on the breadboard.
+const float MAX_RESISTANCE_OHMS = 8000; // Arbitrary, but somewhat calibrated to R1 of 10000
 
 void setup()
 {
@@ -40,5 +39,6 @@ float readResistanceFromPin(int pinNumber)
 
 String formatOutput(int analogPin, float resistance)
 {
-  return String(analogPin) + ": " + String(resistance);
+  return String(resistance);
+//  return String(analogPin) + ": " + String(resistance);
 }
