@@ -1,3 +1,9 @@
+#include <pitchToFrequency.h>
+#include <pitchToNote.h>
+#include <frequencyToNote.h>
+#include <MIDIUSB_Defs.h>
+#include <MIDIUSB.h>
+
 const int NUM_PINS = 2;
 const int analogPins[NUM_PINS] = {0, 1};
 const int Vin = 5;
