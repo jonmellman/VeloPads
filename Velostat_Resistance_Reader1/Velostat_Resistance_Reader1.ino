@@ -29,28 +29,36 @@ void setup() {
 
 void loop() {
     for (int i = 0; i < NUM_PINS; i++) {
-        updateState(velostatPads[i]);
+      updateState(&velostatPads[i]);
     }
 
     delay(5);
 }
 
-void updateState(struct VelostatPad pad) {
+void updateState(struct VelostatPad* padPointer) {
     const int RESISTANCE_THRESHOLD = 600;
-    float resistance = readResistanceFromPin(pad.analogPinNumber);
+    const int COUNTER_MAX = 5;
+    float resistance = readResistanceFromPin(padPointer->analogPinNumber);
     
-    if (!pad.isOn && resistance < RESISTANCE_THRESHOLD) {
-        // Now it's on
-        pad.isOn = true;
-        pad.currentVelocity = getVelocityFromResistance(resistance);
-        noteOn(0, 48, 127);
+    if (!padPointer->isOn && resistance < RESISTANCE_THRESHOLD) {
+        if (padPointer->counter++ >= COUNTER_MAX){
+          noteOn(0, 48, padPointer->currentVelocity);  
+          padPointer->currentVelocity = 0;
+          padPointer->counter = 0;
+          padPointer->isOn = true;
+        } else {
+          padPointer->currentVelocity = max(getVelocityFromResistance(resistance), padPointer->currentVelocity);
+        }
     }
 
-    if (pad.isOn && resistance >= RESISTANCE_THRESHOLD) {
+    if (resistance >= RESISTANCE_THRESHOLD) {
         // Now it's off
-        pad.isOn = false;
-        pad.currentVelocity = 0;
-        noteOff(0, 48, 0);
+        padPointer->currentVelocity = 0;
+        padPointer->counter = 0;
+        if( padPointer->isOn ) {
+          padPointer->isOn = false;
+          noteOff(0, 48, 0);
+        }
     }
 
 }
