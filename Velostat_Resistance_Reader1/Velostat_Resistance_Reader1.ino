@@ -6,7 +6,7 @@
 #include "VelostatPad.h"
 
 const int NUM_PINS = 1;
-const int Vin = 5;
+const int V_IN = 5;
 const float REFERENCE_RESISTANCE_OHMS = 10000; // Value of the reference resistor on the breadboard.
 const float MAX_RESISTANCE_OHMS = 8000;        // Arbitrary, but somewhat calibrated to R1 of 10000
 
@@ -34,6 +34,8 @@ void loop()
     {
         updateState(&velostatPads[i]);
     }
+
+    // delay(5); // For debugging
 }
 
 void updateState(struct VelostatPad *padPointer)
@@ -41,6 +43,8 @@ void updateState(struct VelostatPad *padPointer)
     const int RESISTANCE_THRESHOLD = 6000;
     const int COUNTER_MAX = 5;
     float resistance = readResistanceFromPin(padPointer->analogPinNumber);
+    Serial.println(resistance);
+
     // TODO: Get velocity at this point, and remove the resistance < RESISTANCE_THRESHOLD check
 
     if (!padPointer->isOn && resistance < RESISTANCE_THRESHOLD)
@@ -57,7 +61,7 @@ void updateState(struct VelostatPad *padPointer)
         {
             // Over 5 steps, we set currentVelocity to max of previous velocity and current velocity
             padPointer->currentVelocity = max(getVelocityFromResistance(resistance), padPointer->currentVelocity);
-            Serial.println(padPointer->currentVelocity);
+            // Serial.println(padPointer->currentVelocity);
         }
     }
 
@@ -88,10 +92,10 @@ float readResistanceFromPin(int pinNumber)
         return MAX_RESISTANCE_OHMS;
     }
 
-    float buffer = rawAnalogInput * Vin;
+    float buffer = rawAnalogInput * V_IN;
     float Vout = buffer / 1023.0;
 
-    buffer = (Vin / Vout) - 1;
+    buffer = (V_IN / Vout) - 1;
 
     float outputResistanceOhms = REFERENCE_RESISTANCE_OHMS * buffer;
     outputResistanceOhms = min(outputResistanceOhms, MAX_RESISTANCE_OHMS); // Clamp output value
