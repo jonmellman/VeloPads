@@ -5,10 +5,10 @@
 #include <MIDIUSB.h>
 #include "VelostatPad.h"
 
-const int NUM_VELOSTAT_PADS = 1; // Adjust based on the analog inputs wired in your circuit.
-const int V_IN = 5; // Input voltage. Typically 5V.
+const int NUM_VELOSTAT_PADS = 1;               // Adjust based on the analog inputs wired in your circuit.
+const int V_IN = 5;                            // Input voltage. Typically 5V.
 const float REFERENCE_RESISTANCE_OHMS = 10000; // Value of the reference resistor on the breadboard.
-const float MAX_RESISTANCE_OHMS = 8000; // Arbitrary, but somewhat calibrated to the reference resistor and our velostat pad.
+const float MAX_RESISTANCE_OHMS = 8000;        // Arbitrary, but somewhat calibrated to the reference resistor and our velostat pad.
 
 struct VelostatPad velostatPads[NUM_VELOSTAT_PADS];
 
@@ -88,17 +88,18 @@ float readResistanceFromPin(int pinNumber)
         return MAX_RESISTANCE_OHMS;
     }
 
-    float buffer = rawAnalogInput * V_IN;
-    float Vout = buffer / 1023.0;
+    /*
+        Arduino voltage measurement is relative to V_IN, and mapped to a 0 - 1023 scale.
+        For example, if the pin reads its maximum of 1023 then the actual output voltage is the same as the input voltage (5V).
+        https://www.arduino.cc/reference/en/language/functions/analog-io/analogread/
+     */
+    float Vout = (rawAnalogInput * V_IN) / 1023.0;
+    float outputResistanceOhms = REFERENCE_RESISTANCE_OHMS * (V_IN / Vout) - 1;
 
-    buffer = (V_IN / Vout) - 1;
-
-    float outputResistanceOhms = REFERENCE_RESISTANCE_OHMS * buffer;
     outputResistanceOhms = min(outputResistanceOhms, MAX_RESISTANCE_OHMS); // Clamp output value
 
     return outputResistanceOhms;
 }
-
 
 // First parameter is the event type (0x09 = note on, 0x08 = note off).
 // Second parameter is note-on/note-off, combined with the channel.
